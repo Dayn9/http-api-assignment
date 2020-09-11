@@ -6,7 +6,51 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
+    const handleResponse = (xhr) => {
+      const content = document.querySelector("#content");
 
+      //display the Status code message
+      switch(xhr.status){
+          case 200: content.innerHTML = "<b>Success</b>"; break;
+          case 400: content.innerHTML = "<b>Bad Request</b>"; break;
+          case 401: content.innerHTML = "<b>Unauthorized</b>"; break;
+          case 403: content.innerHTML = "<b>Forbidden</b>"; break;
+          case 404: content.innerHTML = "<b>Not Found</b>"; break;
+          case 500: content.innerHTML = "<b>Internal</b>"; break;
+          case 501: content.innerHTML = "<b>Not Implemented</b>"; break;
+          default: content.innerHTML = "<b>Error code not implemented</b>"; break;
+        }
+
+      //check content header type
+      const type = xhr.getResponseHeader('content-type');
+      if(type === 'application/json'){
+        const obj = JSON.parse(xhr.response);
+        content.innerHTML += `<p>Message: ${obj.message}</p>`;
+      }else if(type === 'text/xml'){
+        const message = xhr.responseXML.querySelector('message').textContent;
+        content.innerHTML += `<p>Message: ${message}</p>`;;
+      }
+    };
+
+    const sendAjax = (url, type) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', url);
+      xhr.setRequestHeader("Accept", type)
+      
+      xhr.onload = () => handleResponse(xhr);
+
+      xhr.send();
+    };
+
+    const init = () => {
+      const sendButton = document.querySelector('#send');
+      const pageSelect = document.querySelector("#page");
+      const typeSelect = document.querySelector("#type");
+
+      sendButton.addEventListener('click', () => sendAjax(pageSelect.value, typeSelect.value))
+    };
+
+    window.onload = init;
   </script>
 </head>
 <body>
